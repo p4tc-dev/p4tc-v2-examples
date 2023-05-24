@@ -1,0 +1,51 @@
+#!/bin/bash -x
+
+set -e
+
+# Create pipeline
+$TC p4template create pipeline/redirect_srcip numtables 1 pipeid 1
+
+####################################
+# Create Actions + defined Externs #
+####################################
+echo "Creating Actions and externs.."
+#sleep 1
+# send_nh() just sets metadata which will be used on POA hook
+# We have a type "dev" which is not really P4 type
+# Other possible types here are port ifindex and port id
+# but if we have any of those we will need a translation table.
+# Note, here we create the actions specified in the P4 program
+$TC p4template create action/redirect_srcip/MainControlImpl/send_nh actid 1 \
+    param port type dev id 1 \
+    param smac type macaddr id 2 \
+    param dmac type macaddr id 3
+
+# activate
+$TC p4template update action/redirect_srcip/MainControlImpl/send_nh state active
+
+$TC p4template create action/redirect_srcip/MainControlImpl/drop actid 2
+
+# activate
+$TC p4template update action/redirect_srcip/MainControlImpl/drop state active
+
+################## Tables ###############################
+
+#########################################################
+# Declare table "nh_table" and associated infrastructure
+#########################################################
+
+$TC p4template create table/redirect_srcip/MainControlImpl/nh_table \
+	tblid 1  keysz 32 type exact tentries 262144 nummasks 32 \
+	table_acts act name redirect_srcip/MainControlImpl/send_nh flags tableonly \
+	act name redirect_srcip/MainControlImpl/drop flags defaultonly
+
+# Table "nh_table" miss default action T_nh_table_miss
+############################################################
+# Create default miss action which happens to be a const
+# Naming: T_<Table name>_miss if we have to create from scratch
+# in this case it is PNA's drop which sets the drop metadata
+$TC p4template update table/redirect_srcip/MainControlImpl/nh_table \
+    default_miss_action permissions 0x109 action redirect_srcip/MainControlImpl/drop
+
+# Seal pipeline
+$TC p4template update pipeline/redirect_srcip state ready

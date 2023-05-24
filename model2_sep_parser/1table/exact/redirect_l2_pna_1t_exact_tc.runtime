@@ -1,0 +1,12 @@
+#!/bin/bash -x
+
+set -e
+
+$TC qdisc add dev $P0 clsact
+
+# SW data path in eBPF only on TC separate parser from the rest of the program
+$TC filter add dev $P0 ingress protocol ip prio 1 p4 pname redirect_srcip prog type tc obj redirect_l2_psa_parser_ebpf_datapath.o section p4tc/tc-parse \
+       action bpf obj redirect_l2_psa_1t_exact_noparser.o section p4tc_process/tc-ingress verbose
+
+# Simple example of table entry addition
+#$TC p4runtime create redirect_srcip/table/MainControlImpl/nh_table srcAddr 10.0.0.1 prio 1 action redirect_srcip/MainControlImpl/send_nh param port type dev port1 param smac type macaddr b8:ce:f6:4b:68:35 param dmac type macaddr ac:1f:6b:e4:ff:93

@@ -1,0 +1,74 @@
+#!/bin/bash -x
+
+set -e
+
+# Create pipeline
+$TC p4template create pipeline/redirect_srcdstip numtables 2 pipeid 1
+
+####################################
+# Create Actions + defined Externs #
+####################################
+echo "Creating Actions and externs.."
+#sleep 1
+# send_nh() just sets metadata which will be used on POA hook
+# We have a type "dev" which is not really P4 type
+# Other possible types here are port ifindex and port id
+# but if we have any of those we will need a translation table.
+# Note, here we create the actions specified in the P4 program
+$TC p4template create action/redirect_srcdstip/MainControlImpl/send_nh actid 1 \
+    param port type dev id 1 \
+    param smac type macaddr id 2 \
+    param dmac type macaddr id 3
+
+# activate
+$TC p4template update action/redirect_srcdstip/MainControlImpl/send_nh state active
+
+$TC p4template create action/redirect_srcdstip/MainControlImpl/default_drop actid 2
+
+# activate
+$TC p4template update action/redirect_srcdstip/MainControlImpl/default_drop state active
+
+$TC p4template create action/redirect_srcdstip/MainControlImpl/accept actid 3
+
+$TC p4template update action/redirect_srcdstip/MainControlImpl/accept state active
+
+################## Tables ###############################
+
+#########################################################
+# Declare table "nh_table1" and associated infrastructure
+#########################################################
+
+$TC p4template create table/redirect_srcdstip/MainControlImpl/nh_table1 \
+	tblid 1  keysz 64 type lpm tentries 262144 nummasks 256 \
+	table_acts act name redirect_srcdstip/MainControlImpl/accept flags tableonly \
+	act name redirect_srcdstip/MainControlImpl/default_drop flags defaultonly
+
+# Table "nh_table1" miss default action T_nh_table1_miss
+############################################################
+# Create default miss action which happens to be a const
+# Naming: T_<Table name>_miss if we have to create from scratch
+# in this case it is PNA's drop which sets the drop metadata
+$TC p4template update table/redirect_srcdstip/MainControlImpl/nh_table1 \
+    default_miss_action permissions 0x109 action redirect_srcdstip/MainControlImpl/default_drop
+
+################## Tables ###############################
+
+#########################################################
+# Declare table "nh_table2" and associated infrastructure
+#########################################################
+
+$TC p4template create table/redirect_srcdstip/MainControlImpl/nh_table2 \
+	tblid 2  keysz 64 type ternary tentries 262144 nummasks 256 \
+	table_acts act name redirect_srcdstip/MainControlImpl/send_nh flags tableonly \
+	act name redirect_srcdstip/MainControlImpl/default_drop flags defaultonly
+
+# Table "nh_table2" miss default action T_nh_table2_miss
+############################################################
+# Create default miss action which happens to be a const
+# Naming: T_<Table name>_miss if we have to create from scratch
+# in this case it is PNA's drop which sets the drop metadata
+$TC p4template update table/redirect_srcdstip/MainControlImpl/nh_table2 \
+    default_miss_action permissions 0x109 action redirect_srcdstip/MainControlImpl/default_drop
+
+# Seal pipeline
+$TC p4template update pipeline/redirect_srcdstip state ready
