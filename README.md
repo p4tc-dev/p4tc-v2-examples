@@ -209,6 +209,8 @@ for both is *ternary*.
 
 ## Compilation
 
+### User Space
+
 To compile any of the eBPF C programs, the user needs to have LLVM (15+), with
 clang and llc, installed.  We also need to install libbpf-dev, libelf-dev and
 gcc-multilib. To install these in ubuntu, one could issue the following command:
@@ -230,3 +232,24 @@ You can also tell the Makefile to compile only the files form one model, for
 example:
 
 make model2
+
+### Kernel
+
+Compile your kernel with the provided debug config (tested on VM):
+
+1. git clone https://github.com/p4tc-dev/linux-p4tc-pub.git
+2. cd linux-p4tc-pub/
+3. cp config-debug-p4tc-x86 .config
+4. make olddefconfig
+5. make -j \`nproc\`
+
+The provided config file is a debug configuration that is capable of
+running the examples.
+To enforce BTF in any kernel config you need to turn on 'DEBUG_INFO_BTF'.
+
+BTF is the a metadata format for eBPF which depends on a tool called
+pahole. It's mandatory for eBPF as of recent versions of the kernel.
+You need to install pahole in your system:
+https://git.kernel.org/pub/scm/devel/pahole/pahole.git/
+Or install the 'dwarves' package:
+https://pkgs.org/search/?q=dwarves
