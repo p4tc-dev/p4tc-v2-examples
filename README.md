@@ -212,11 +212,33 @@ for both is *ternary*.
 ### User Space
 
 To compile any of the eBPF C programs, the user needs to have LLVM (15+), with
-clang and llc, installed.  We also need to install libbpf-dev, libelf-dev and
-gcc-multilib. To install these in ubuntu, one could issue the following command:
+clang and llc, installed.  We also need to install libelf-dev and gcc-multilib.
+To install these in ubuntu, one could issue the following command:
 
+apt install clang-15 libelf-dev gcc-multilib --install-suggests
 
-apt install clang-15 libbpf-dev gcc-multilib --install-suggests
+You will need the p4tc enabled iproute2 linked with the latest libbpf.
+First libbpf
+
+```
+cd /tmp/
+git clone https://github.com/libbpf/libbpf.git
+cd libbpf/src
+mkdir build root
+BUILD_STATIC_ONLY=y OBJDIR=build DESTDIR=root make install
+```
+
+Then build iproute2 and link with the static libbpf you built earlier:
+
+```
+cd /tmp/
+git clone https://github.com/p4tc-dev/iproute2-p4tc-pub
+cd iproute2-p4tc-pub/
+./configure --libbpf_dir /tmp/libbpf/src/root/
+make
+```
+
+#### Compiling the ebpf programs
 
 We have a Makefile which takes care of compilation.
 Before invoking it the user must specify the path to the eBPF program they wish
@@ -235,7 +257,9 @@ make model2
 
 ### Kernel
 
-Compile your kernel with the provided debug config (tested on VM):
+Compile your kernel with the provided debug config (tested on VM, if you are
+trying to build on baremetal then make sure step #3 has the correct config
+with additional features for your hardware):
 
 1. git clone https://github.com/p4tc-dev/linux-p4tc-pub.git
 2. cd linux-p4tc-pub/
@@ -245,11 +269,3 @@ Compile your kernel with the provided debug config (tested on VM):
 
 The provided config file is a debug configuration that is capable of
 running the examples.
-To enforce BTF in any kernel config you need to turn on 'DEBUG_INFO_BTF'.
-
-BTF is the a metadata format for eBPF which depends on a tool called
-pahole. It's mandatory for eBPF as of recent versions of the kernel.
-You need to install pahole in your system:
-https://git.kernel.org/pub/scm/devel/pahole/pahole.git/
-Or install the 'dwarves' package:
-https://pkgs.org/search/?q=dwarves
