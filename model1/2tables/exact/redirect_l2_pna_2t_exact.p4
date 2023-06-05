@@ -1,7 +1,7 @@
 /* -*- P4_16 -*- */
 
 #include <core.p4>
-#include <pna.p4>
+#include <tc/pna.p4>
 
 #define PORT_TABLE_SIZE 262144
 
@@ -79,7 +79,7 @@ control ingress(
     inout pna_main_output_metadata_t ostd
 )
 {
-   action send_nh(PortId_t port_id, bit<48> dmac, bit<48> smac) {
+   action send_nh(@tc_type("dev") PortId_t port_id, @tc_type("macaddr") bit<48> dmac, @tc_type("macaddr") bit<48> smac) {
         hdr.ethernet.srcAddr = smac;
         hdr.ethernet.dstAddr = dmac;
         send_to_port(port_id);
@@ -95,7 +95,7 @@ control ingress(
 
    table nh_table1 {
        key = {
-           hdr.ipv4.srcAddr : exact;
+           hdr.ipv4.srcAddr : exact @tc_type("ipv4");
        }
        actions = {
            accept;
@@ -107,7 +107,7 @@ control ingress(
 
    table nh_table2 {
        key = {
-           hdr.ipv4.dstAddr : exact;
+           hdr.ipv4.dstAddr : exact @tc_type("ipv4");
        }
        actions = {
            send_nh;
