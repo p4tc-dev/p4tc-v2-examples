@@ -94,8 +94,8 @@ control ingress(
 
    table nh_table1 {
        key = {
-           hdr.ipv4.srcAddr : ternary @tc_type("ipv4");
-           hdr.ipv4.dstAddr : ternary @tc_type("ipv4");
+           hdr.ipv4.srcAddr : ternary @tc_type("ipv4") @name("srcAddr");
+           hdr.ipv4.dstAddr : ternary @tc_type("ipv4") @name("dstAddr");
        }
        actions = {
            accept;
@@ -107,8 +107,8 @@ control ingress(
 
    table nh_table2 {
        key = {
-           hdr.ipv4.dstAddr : ternary @tc_type("ipv4");
-           hdr.ipv4.srcAddr : ternary @tc_type("ipv4");
+           hdr.ipv4.dstAddr : ternary @tc_type("ipv4") @name("dstAddr");
+           hdr.ipv4.srcAddr : ternary @tc_type("ipv4") @name("srcAddr");
        }
        actions = {
            send_nh;
