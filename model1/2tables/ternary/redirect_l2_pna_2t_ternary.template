@@ -173,10 +173,10 @@ $TC p4template update table/redirect_srcdstip/ingress/nh_table2 \
 # Define pipeline preaction PPREA
 ##################################
 
-$TC p4template create action/redirect_srcip/PPREA \
-     cmd tableapply table.redirect_srcip.ingress/nh_table1 \
-     cmd beq metadata.redirect_srcip.global/accept constant.bit1.1 control pipe / jump else \
-     cmd tableapply table.redirect_srcip.ingress/nh_table2 \
+$TC p4template create action/redirect_l2_pna_2t_ternary/PPREA \
+     cmd tableapply table.redirect_l2_pna_2t_ternary.ingress/nh_table1 \
+     cmd beq metadata.redirect_l2_pna_2t_ternary.global/accept constant.bit1.1 control pipe / jump else \
+     cmd tableapply table.redirect_l2_pna_2t_ternary.ingress/nh_table2 \
      cmd label else
 
 #activate action
@@ -190,9 +190,9 @@ $TC p4template update pipeline/redirect_srcdstip preactions action redirect_srcd
 #Naming convention for pipeline postaction is PPOA
 
 ############### Pipeline Postactions ###########################
-$TC p4template create action/redirect_srcip/PPOA  \
-        cmd beq metadata.redirect_srcip.global/drop constant.bit1.1 control drop / pipe \
-	cmd send_port_egress metadata.redirect_srcip.output_port
+$TC p4template create action/redirect_l2_pna_2t_ternary/PPOA  \
+        cmd beq metadata.redirect_l2_pna_2t_ternary.global/drop constant.bit1.1 control drop / pipe \
+	cmd send_port_egress metadata.redirect_l2_pna_2t_ternary.output_port
 
 $TC p4template update action/redirect_srcdstip/PPOA state active
 

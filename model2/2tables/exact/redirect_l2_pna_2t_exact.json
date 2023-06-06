@@ -1,27 +1,56 @@
 {
   "schema_version" : "1.0.0",
-  "pipeline_name" : "redirect_srcip",
+  "pipeline_name" : "redirect_l2_pna_2t_exact",
   "id" : 1,
   "tables" : [
     {
-      "name" : "ingress/nh_table",
+      "name" : "ingress/nh_table1",
       "id" : 1,
       "tentries" : 262144,
       "nummask" : 8,
-      "keysize" : 64,
+      "keysize" : 32,
       "keyfields" : [
         {
           "id" : 1,
-          "name" : "hdr.ipv4.srcAddr",
+          "name" : "srcAddr",
           "type" : "ipv4",
-          "match_type" : "ternary",
+          "match_type" : "exact",
           "bitwidth" : 32
-        },
+        }
+      ],
+      "actions" : [
         {
           "id" : 2,
-          "name" : "hdr.ipv4.dstAddr",
+          "name" : "ingress/accept",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "params" : [],
+          "default_hit_action" : false,
+          "default_miss_action" : false
+        },
+        {
+          "id" : 3,
+          "name" : "ingress/default_drop",
+          "action_scope" : "TableAndDefault",
+          "annotations" : [],
+          "params" : [],
+          "default_hit_action" : false,
+          "default_miss_action" : true
+        }
+      ]
+    },
+    {
+      "name" : "ingress/nh_table2",
+      "id" : 2,
+      "tentries" : 262144,
+      "nummask" : 8,
+      "keysize" : 32,
+      "keyfields" : [
+        {
+          "id" : 1,
+          "name" : "dstAddr",
           "type" : "ipv4",
-          "match_type" : "ternary",
+          "match_type" : "exact",
           "bitwidth" : 32
         }
       ],
@@ -55,8 +84,8 @@
           "default_miss_action" : false
         },
         {
-          "id" : 2,
-          "name" : "ingress/drop",
+          "id" : 3,
+          "name" : "ingress/default_drop",
           "action_scope" : "TableAndDefault",
           "annotations" : [],
           "params" : [],

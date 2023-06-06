@@ -1,6 +1,6 @@
 {
   "schema_version" : "1.0.0",
-  "pipeline_name" : "redirect_srcip",
+  "pipeline_name" : "redirect_l2_pna_2t_ternary",
   "id" : 1,
   "tables" : [
     {
@@ -12,14 +12,14 @@
       "keyfields" : [
         {
           "id" : 1,
-          "name" : "hdr.ipv4.srcAddr",
+          "name" : "srcAddr",
           "type" : "ipv4",
           "match_type" : "ternary",
           "bitwidth" : 32
         },
         {
           "id" : 2,
-          "name" : "hdr.ipv4.dstAddr",
+          "name" : "dstAddr",
           "type" : "ipv4",
           "match_type" : "ternary",
           "bitwidth" : 32
@@ -55,14 +55,14 @@
       "keyfields" : [
         {
           "id" : 1,
-          "name" : "hdr.ipv4.dstAddr",
+          "name" : "dstAddr",
           "type" : "ipv4",
           "match_type" : "ternary",
           "bitwidth" : 32
         },
         {
           "id" : 2,
-          "name" : "hdr.ipv4.srcAddr",
+          "name" : "srcAddr",
           "type" : "ipv4",
           "match_type" : "ternary",
           "bitwidth" : 32
