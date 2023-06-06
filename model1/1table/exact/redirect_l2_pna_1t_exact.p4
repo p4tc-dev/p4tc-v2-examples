@@ -90,7 +90,7 @@ control ingress(
 
     table nh_table {
         key = {
-            hdr.ipv4.srcAddr : exact @tc_type("ipv4");
+            hdr.ipv4.srcAddr : exact @tc_type("ipv4") @name("srcAddr");
         }
         actions = {
             send_nh;
